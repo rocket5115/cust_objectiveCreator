@@ -206,6 +206,7 @@ Misc = {
                 end
             end
         end
+        print(toLoad)
         local func, err = load(toLoad)
         if func then
             local ok, add = pcall(func)
