@@ -12,11 +12,17 @@ Instructions:
 here, marker is chosen as my element to work with. I can either choose to move it down or up. If element is lower then it means it will be executed later than ones above it. 
 
 Copy-to-Clipboard = copies .oc version of chosen element
+
 Edit in workspace = copies current version of chosen element and takes you to workspace. After changes are made you must click sumbit button.
+
 Move Down = Move element further down in execution queue
+
 Move Up = Move element further up in execution queue
+
 Remove = Remove chosen element
+
 Execute Project = Execute current project(FiveM only), you can execute as many times as you want.
+
 Export Project = copies .oc version of current project
 
 #Submitting new changes
