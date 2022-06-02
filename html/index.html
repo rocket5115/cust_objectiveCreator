@@ -47,7 +47,7 @@
                     $('#container').hide();
                 };
             };
-            display(true);
+            display(false);
             hideAssets();
             var coordX = 9.99;
             var coordY = 9.99;
@@ -489,6 +489,10 @@
                 };
             };
             var lastElement = "";
+            function countCharacter(str, ch) {
+                const count = (str.match(new RegExp(ch, "g")) || []).length
+                return count;
+            };
             function SubmitCurrentData(e) {
                 let i=0;
                 let res = LuaList[lastElement]+':';
@@ -497,9 +501,13 @@
                     if(doc.value == "" && (i+1)!=InputList[lastElement]) {
                         continue;
                     };
-                    doc.value = doc.value.replace(',', '++')
+                    doc.value = doc.value.replace(',', '++');
+                    doc.value = doc.value.replace('tce:', 'tce<<>>');
+                    doc.value = doc.value.replace('tse:', 'tce<<>>');
+                    doc.value = doc.value.replace(':', '==');
+                    doc.value = doc.value.replace('<<>>', ':')
                     if((i+1)!=InputList[lastElement]) {
-                        res = res + doc.value + ','
+                        res = res + doc.value + ',';
                     } else {
                         res = res + doc.value + ';';
                     };
