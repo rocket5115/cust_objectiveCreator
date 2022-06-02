@@ -27,4 +27,4 @@ Export Project = copies .oc version of current project
 
 #Submitting new changes
 
-After you set all of the options for any function you can Sumbit it using Sumbit button of bottom-left. After that you will find .oc version of it in Code Editor.
+After you set all of the options for any function you can Submit it using Submit button of bottom-left. After that you will find .oc version of it in Code Editor.
