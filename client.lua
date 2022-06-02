@@ -65,7 +65,8 @@ function custExecute(str)
             if sub == ',' or j == string.len(res[i].args) then
                 isTrue = (j==string.len(res[i].args))
                 local arg = string.gsub(string.sub(res[i].args, start_pos, isTrue and j or j-1), '++', ',')
-                args[i][#args[i]+1] = arg
+                local c = string.gsub(arg, "==", ':')
+                args[i][#args[i]+1] = c
                 start_pos = 0
             end
         end
