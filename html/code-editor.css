@@ -1,0 +1,78 @@
+#sub-container {
+    position: absolute;
+    left: 0%;
+    width: 80%;
+    height: 80%;
+    margin: 5rem;
+    margin-top: var(--main-margin);
+    margin-bottom: var(--main-margin);
+    padding: var(--main-padding);
+    z-index: auto;
+    display: grid;
+    grid-template-rows: 40px auto;
+    grid-gap: 1rem;
+    row-gap: 1rem;
+}
+
+#sub-container>#code-editor {
+    display: grid;
+    grid-template-columns: 25% auto;
+    grid-gap: 1em;
+    row-gap: 1em;
+}
+
+#sub-container>#code-editor>#code-editor-actions {
+    background-color: rgba(37, 37, 37, 0.841);
+    display: grid;
+    grid-template-rows: auto;
+}
+
+#sub-container>#code-editor>#main-workspace {
+    background-color:rgba(0, 2, 47, 0.093);
+    margin: 0%;
+    padding: 0%;
+    display: grid;
+    grid-template-rows: auto;
+}
+
+#sub-container>#code-editor>#main-workspace>textarea {
+    background-color: rgba(238, 238, 238, 0.447);
+    height: 40px;
+    width: auto;
+    margin: 0.4em;
+    margin-left: 1em;
+    padding: 0.2em;
+    min-width: 100px;
+    max-width: 100%;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: monospace;
+    text-align: normal;
+    word-wrap: nowrap;
+    white-space: nowrap;
+    color: black;
+}
+
+#sub-container>#code-editor>#main-workspace>p:hover {
+    cursor: pointer;
+    background-color: rgba(238, 238, 238, 0.705);
+}
+
+#sub-container>#code-editor>#code-editor-actions>div {
+    width: auto;
+    color: black;
+    height: 10px;
+    margin: 15px;
+    padding: 0px;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: monospace;
+    text-align: normal;
+    word-wrap: nowrap;
+    white-space: nowrap;
+}
+
+#sub-container>#code-editor>#code-editor-actions>div:hover {
+    color: rgb(188, 188, 188);
+    cursor: pointer;
+}

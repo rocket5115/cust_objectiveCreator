@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+        <title>Objective Creator-Enchanced</title>
+        <link rel="stylesheet" href="./style.css">
+        <link rel="stylesheet" href="./code-editor.css">
+    </head>
+    <body>
+        <container id="container">
+            <div id="main-container">
+                <div id="main-header"><span id="header-span" onclick="OpenWorkspace(true)">Objective Creator-Enchanced</span><span id="button-span" onclick="OpenCodeEditor(true)">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Code Editor</span></div>
+                <div id="main-space">
+                    <div id="actions-tab"></div>
+                    <div id="workspace"></div>
+                </div>
+            </div>
+            <div id="sub-container">
+                <div id="sub-header"></div>
+                <div id="code-editor">
+                    <div id="code-editor-actions">
+                        <div class="code-editor-actions-tab" id="code-editor-actions-copy-cb" onclick="CodeTabClicked(this)">Copy-To-Clipboard</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-copy-ws" onclick="CodeTabClicked(this)">Edit in Workspace</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-down" onclick="CodeTabClicked(this)">Move Down</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-up" onclick="CodeTabClicked(this)">Move Up</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-remove" onclick="CodeTabClicked(this)">Remove</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-execute" onclick="CodeTabClicked(this)">Execute Project</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-export" onclick="CodeTabClicked(this)">Export Project</div>
+                    </div>
+                    <div id="main-workspace"></div>
+                </div>
+            </div>
+        </container>
+        <script>
+            function hideAssets() {
+                $('#code-editor').hide();
+                $('#main-space').hide();
+            };
+
+            function display(bool) {
+                if (bool) {
+                    $('#container').show();
+                } else {
+                    $('#container').hide();
+                };
+            };
+            display(true);
+            hideAssets();
+            var coordX = 9.99;
+            var coordY = 9.99;
+            var coordZ = 9.99;
+            var heading = 200.0;
+            var InputList = [];
+            var TitlesList = [];
+            var StuffList = [];
+            var LuaList = [];
+            var SavedData = [];
+            window.addEventListener('message', function(event) {
+                var item = event.data;
+                if(item.status === true) {
+                    display(true);
+                    if(item.additionalData) {
+                        UpdateXYZH(item.additionalData);
+                    };
+                } else {
+                    display(false);
+                };
+            });
+            function UpdateXYZH(vector4) {
+                let i=0;
+                let names = [];
+                names['Create Marker'] = true;
+                names['Create NPC'] = true;
+                names['Create Vehicle'] = true;
+                names['Create Object'] = true;
+                for(name in names) {
+                    while(true) {
+                        if(StuffList[name][i] === undefined || TitlesList[name][i] === undefined) {
+                            break;
+                        };
+                        if(TitlesList[name][i]=='x') {
+                            StuffList[name][i] = vector4.x;
+                            if(SavedData[name] && SavedData[name][i]) {
+                                SavedData[name][i] = vector4.x;
+                            };
+                        } else if(TitlesList[name][i]=='y') {
+                            StuffList[name][i] = vector4.y;
+                            if(SavedData[name] && SavedData[name][i]) {
+                                SavedData[name][i] = vector4.y;
+                            };
+                        } else if(TitlesList[name][i]=='z') {
+                            StuffList[name][i] = vector4.z;
+                            if(SavedData[name] && SavedData[name][i]) {
+                                SavedData[name][i] = vector4.z;
+                            };
+                        } else if(TitlesList[name][i]=='heading') {
+                            StuffList[name][i] = vector4.w;
+                            if(SavedData[name] && SavedData[name][i]) {
+                                SavedData[name][i] = vector4.w;
+                            };
+                        };
+                        i++
+                    };
+                    i=0;
+                };
+                x = vector4.x;
+                y = vector4.y;
+                z = vector4.z;
+                heading = vector4.w;
+            };
+            var workspaceElements = [];
+            function OpenCodeEditor(bool) {
+                if(!bool) {
+                    return
+                };
+                $('#main-space').hide();
+                $('#code-editor').show();
+                let main = document.getElementById('main-space');
+                let code = document.getElementById('code-editor');
+                main.style.zIndex = 0;
+                code.style.zIndex = 1;
+                let doc = document.querySelectorAll('.code-editor-workspace-element');
+                let res = "";
+                doc.forEach(cls => {
+                    cls.remove();
+                });
+                let i=0;
+                for(i;i<workspaceElements.length;i++) {
+                    res = res + '60px ';
+                    $('#main-workspace').append(workspaceElements[i]);
+                };
+                let ws = document.getElementById('main-workspace');
+                ws.style.gridTemplateRows = res;
+                if(lastWorkspaceElement!="") {
+                    let docs = document.getElementById(lastWorkspaceElement);
+                    docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                };
+            };
+            var lastWorkspaceElement = "";
+            function OpenWorkspace(bool) {
+                if(!bool) {
+                    return
+                };
+                $('#main-space').show();
+                $('#code-editor').hide();
+                let main = document.getElementById('main-space');
+                let code = document.getElementById('code-editor');
+                main.style.zIndex = 1;
+                code.style.zIndex = 0;
+                if(lastWorkspaceElement!="") {
+                    let docs = document.getElementById(lastWorkspaceElement);
+                    docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                };
+            };
+            var List = [
+                {
+                    name: 'Create Notification',
+                    luaType: 'cnt',
+                    inputs: 1,
+                    stuff: ['some text'],
+                    titles: ['text']
+                },
+                {
+                    name: 'Create MissionText',
+                    luaType: 'cmt',
+                    inputs: 2,
+                    stuff: ['some text', 1000],
+                    titles: ['text', 'time']
+                },
+                {
+                    name: 'Create Marker',
+                    luaType: 'mar',
+                    inputs: 26,
+                    stuff: [0, coordX, coordY, coordZ, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 255, 255, 255, 255, false, false, 2, false, null, null, false, false, 46],
+                    titles: ["type", "x", "y", "z", "dirX", "dirY", "dirZ", "rotX", "rotY", "rotZ", "scaleX", "scaleY", "scaleZ", "red", "green", "blue", "alpha", "bobUpAndDown", "faceCamera", "p19", "rotate", "textureDict", "textureName", "drawOnEnts", "onButton", "key"],
+                },
+                {
+                    name: 'Create NPC',
+                    luaType: 'cnp',
+                    inputs: 8,
+                    stuff: [1, "a_f_m_beach_01", coordX, coordY, coordZ, heading, false, false],
+                    titles: ['pedType-unused', 'modelHash', 'x', 'y', 'z', 'heading', 'isNetwork', 'bScriptHostPed']
+                },
+                {
+                    name: 'Create Vehicle',
+                    luaType: 'cvh',
+                    inputs: 7,
+                    stuff: ["blista", coordX, coordY, coordZ, heading, false, false],
+                    titles: ["modelHash", 'x', 'y', 'z', 'heading', 'isNetwork', "netMissionEntity"]
+                },
+                {
+                    name: 'Create Object',
+                    luaType: 'cob',
+                    inputs: 7,
+                    stuff: ["prop_drug_package", coordX, coordY, coordZ, heading, false, false],
+                    titles: ['hash', 'x', 'y', 'z', 'heading', 'isNetwork', 'doorFlag']
+                },
+                {
+                    name: 'Add Animation',
+                    luaType: 'ani',
+                    inputs: 11,
+                    stuff: ['self', 'gestures@m@standing@casual', 'gesture_point', 8.0, -8.0, -1, 0, 0, false, false, false],
+                    titles: ['ped - last registered ped', 'animDict', 'animName', 'blendInSpeed', 'blendOutSpeed', 'duration', 'flag', 'playbackrate', 'lockX', 'lockY', 'lockZ']
+                },
+                {
+                    name: 'Add Scenario',
+                    luaType: 'sce',
+                    inputs: 4,
+                    stuff: ['self', 'WORLD_VEHICLE_BIKER', -1, false],
+                    titles: ['ped - last registered ped', 'scenName', 'unkDelay', 'playEnterAnim']
+                },
+                {
+                    name: 'Add Delay',
+                    luaType: 'del',
+                    inputs: 1,
+                    stuff: [1000],
+                    titles: ['Delay between actions']
+                },
+                {
+                    name: 'Add Await',
+                    luaType: 'awa',
+                    inputs: 1,
+                    stuff: [true],
+                    titles: ['ignore-unused']
+                },
+                {
+                    name: 'Load NPC',
+                    luaType: 'lnp',
+                    inputs: 1,
+                    stuff: ['1'],
+                    titles: ['Ped Slot in script\'s internal table']
+                },
+                {
+                    name: 'Trigger Event',
+                    luaType: 'tce',
+                    inputs: 10,
+                    stuff: ['eventName', '', '', '', '', '', '', '', '', ''],
+                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']
+                },
+                {
+                    name: 'Trigger Server Event',
+                    luaType: 'tse',
+                    inputs: 10,
+                    stuff: ['eventName', '', '', '', '', '', '', '', '', ''],
+                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']
+                },
+                {
+                    name: 'Export Ped',
+                    luaType: 'exp',
+                    inputs: 2,
+                    stuff: ['exampleEvent', '1'],
+                    titles: ['eventName', 'ped index']
+                },
+                {
+                    name: 'Export Vehicle',
+                    luaType: 'exv',
+                    inputs: 2,
+                    stuff: ['exampleEvent', '1'],
+                    titles: ['eventName', 'vehicle index']
+                },
+                {
+                    name: 'Export Object',
+                    luaType: 'exo',
+                    inputs: 2,
+                    stuff: ['exampleEvent', '1'],
+                    titles: ['eventName', 'object index']
+                },
+            ];
+            $(document).ready(function() {
+                let i = 0;
+                let doc = document.getElementById('actions-tab');
+                doc.style.setProperty('--grid-rows', List.length);
+                for(i;i<List.length;i++) {
+                    $('#actions-tab').append("<p onclick='TabButtonClicked(this)' id='"+List[i].name+"' title='"+List[i].inputs+"'>"+List[i].name+"</p>");
+                    LuaList[List[i].name] = List[i].luaType;
+                    InputList[List[i].name] = List[i].inputs;
+                    TitlesList[List[i].name] = List[i].titles;
+                    StuffList[List[i].name] = List[i].stuff;
+                };
+                let wor = document.querySelectorAll('.code-editor-actions-tab');
+                let res = ""
+                wor.forEach(cls => {
+                    res = res + "40px ";
+                });
+                let ce = document.getElementById('code-editor-actions');
+                ce.style.gridTemplateRows = res;
+                $('#actions-tab').append("<p onclick='SubmitCurrentData(this)'><span id='submit-span'>Submit</span><p>");
+            })
+            function CopyToClipboard(text) {
+                var copy = $('<textarea/>');
+                copy.text(text);
+                $('body').append(copy);
+                copy.select();
+                document.execCommand('copy');
+                copy.remove();
+            };
+            function CopyToWorkspace(text, id) {
+                let res = [];
+                let type = text.substring(0, 3);
+                let ftext = text.substring(4, text.length-1)
+                let len = ftext.length;
+                let searching = false;
+                let pos = 0;
+                let i=0;
+                let num_com = (ftext.match(new RegExp(",", "g")) || []).length
+                for(i;i<len;i++) {
+                    if(ftext.substring(i, i+1) == ',') {
+                        res[res.length] = ftext.substring(pos, i);
+                        pos = i+1;
+                        searching = false;
+                    } else {
+                        if(!searching) {
+                            searching = true;
+                            pos = i;
+                        };
+                    };
+                    if(res.length==num_com) {
+                        res[res.length] = ftext.substring(pos, len);
+                    };
+                };
+                i=0;
+                let wanted = 0;
+                for(i;i<List.length;i++) {
+                    if(List[i].luaType == type) {
+                        wanted = i;
+                        break;
+                    };
+                };
+                i=0;
+                let doc = document.getElementById(List[wanted].name);
+                TabButtonClicked(doc);
+                SetCurElementAsReplace(doc.id, id);
+                OpenWorkspace(true);
+                for(i;i<List[wanted].inputs;i++) {
+                    var docs = document.getElementById('workspace-child'+i);
+                    docs.value = res[i];
+                };
+            };
+            var setElementAsReplace = [];
+            function SetCurElementAsReplace(from, to) {
+                setElementAsReplace[0] = {
+                    from_id: from,
+                    to_id: to
+                };
+            };
+            function CodeTabClicked(e) {
+                let i = 0;
+                if(e.id=='code-editor-actions-copy-cb') {
+                    let doc = document.getElementById(lastWorkspaceElement).textContent;
+                    CopyToClipboard(doc)
+                } else if(e.id=='code-editor-actions-copy-ws') {
+                    let doc = document.getElementById(lastWorkspaceElement).textContent;
+                    CopyToWorkspace(doc, lastWorkspaceElement)
+                } else if(e.id=='code-editor-actions-remove') {
+                    let doc = document.querySelectorAll('.code-editor-workspace-element');
+                    doc.forEach(cls => {
+                        if(cls.id==lastWorkspaceElement) {
+                            cls.remove();
+                        };
+                    });
+                } else if(e.id=='code-editor-actions-down') {
+                    let doc = document.querySelectorAll('.code-editor-workspace-element');
+                    let pos = 0;
+                    let el;
+                    doc.forEach(cls => {
+                        if(cls.id==lastWorkspaceElement) {
+                            pos = i;
+                            el = cls;
+                        };
+                        i++;
+                    });
+                    pos++;
+                    let arr = [];
+                    if(pos>doc.length) {
+                        return;
+                    };
+                    i=0;
+                    arr[pos] = el;
+                    doc.forEach(cls => {
+                        if(cls.id==lastWorkspaceElement) {
+                            return;
+                        }
+                        if(!(String(arr[i])===String(undefined))) {
+                            i++
+                            arr[i] = cls;
+                            return
+                        };
+                        arr[i] = cls;
+                        i++;
+                    });
+                    doc.forEach(cls => {
+                        cls.remove();
+                    });
+                    workspaceElements = arr;
+                    i=0;
+                    for(i;i<workspaceElements.length;i++) {
+                        $('#main-workspace').append(workspaceElements[i])
+                    };
+                    let docs = document.getElementById(lastWorkspaceElement);
+                    docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                } else if(e.id=='code-editor-actions-up') {
+                    let doc = document.querySelectorAll('.code-editor-workspace-element');
+                    let pos = 0;
+                    let el;
+                    doc.forEach(cls => {
+                        if(cls.id==lastWorkspaceElement) {
+                            pos = i;
+                            el = cls;
+                        };
+                        i++;
+                    });
+                    pos = pos-1
+                    let arr = [];
+                    if(pos==-1) {
+                        return;
+                    };
+                    i=0;
+                    arr[pos] = el;
+                    doc.forEach(cls => {
+                        if(cls.id==lastWorkspaceElement) {
+                            return;
+                        }
+                        if(!(String(arr[i])===String(undefined))) {
+                            i++
+                            arr[i] = cls;
+                            return
+                        };
+                        arr[i] = cls;
+                        i++;
+                    });
+                    doc.forEach(cls => {
+                        cls.remove();
+                    });
+                    workspaceElements = arr;
+                    i=0;
+                    for(i;i<workspaceElements.length;i++) {
+                        $('#main-workspace').append(workspaceElements[i])
+                    };
+                    if(lastWorkspaceElement!="") {
+                        let docs = document.getElementById(lastWorkspaceElement);
+                        if(docs) {
+                            docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                        };
+                    };
+                } else if(e.id=='code-editor-actions-execute') { 
+                    let docs = document.querySelectorAll('.code-editor-workspace-element');
+                    let res = "{";
+                    for(i;i<docs.length;i++) {
+                        if((i+1)!=docs.length) {
+                            res = res + docs[i].value
+                        } else {
+                            res = res + docs[i].value.replace(';', "}")
+                        };
+                    };
+                    let directory = GetParentResourceName()
+                    $.post('https://'+directory+'/execute', JSON.stringify({
+                        data: res
+                    }));
+                }else if(e.id=='code-editor-actions-export') {
+                    let docs = document.querySelectorAll('.code-editor-workspace-element');
+                    let res = "{";
+                    for(i;i<docs.length;i++) {
+                        if((i+1)!=docs.length) {
+                            res = res + docs[i].value
+                        } else {
+                            res = res + docs[i].value.replace(';', "}")
+                        };
+                    };
+                    CopyToClipboard(res);
+                };
+            };
+            function WorkspaceClicked(e) {
+                if(lastWorkspaceElement!="") {
+                    let doc = document.getElementById(lastWorkspaceElement);
+                    if(doc) {
+                        doc.style.backgroundColor = "rgba(238, 238, 238, 0.447)";
+                    }
+                    lastWorkspaceElement = e.id;
+                    let docs = document.getElementById(lastWorkspaceElement);
+                    docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                    lastWorkspaceElement = e.id;
+                } else {
+                    lastWorkspaceElement = e.id;
+                    let doc = document.getElementById(lastWorkspaceElement);
+                    doc.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                };
+            };
+            var lastElement = "";
+            function SubmitCurrentData(e) {
+                let i=0;
+                let res = LuaList[lastElement]+':';
+                for(i;i<InputList[lastElement];i++) {
+                    let doc = document.getElementById('workspace-child'+i);
+                    if(doc.value == "" && (i+1)!=InputList[lastElement]) {
+                        continue;
+                    };
+                    doc.value = doc.value.replace(',', '++')
+                    if((i+1)!=InputList[lastElement]) {
+                        res = res + doc.value + ','
+                    } else {
+                        res = res + doc.value + ';';
+                    };
+                };
+                res = res.replace(",;", ';');
+                if(setElementAsReplace[0] != undefined && setElementAsReplace[0].from_id == lastElement) {
+                    i=0;
+                    for(i;i<workspaceElements.length;i++) {
+                        if(workspaceElements[i]==undefined) {
+                            continue;
+                        };
+                        var copy = $(workspaceElements[i]);
+                        $('body').append(copy);
+                        if(copy.attr('id')!=setElementAsReplace[0].to_id) {
+                            copy.remove();
+                            continue;
+                        };
+                        let id = copy.attr('id');
+                        var ant = "<textarea spellcheck='false' onkeyup='SaveTextArea(this)' class='code-editor-workspace-element' onclick='WorkspaceClicked(this)' id='"+id+"'>"+res+"</textarea>"
+                        workspaceElements[i] = ant;
+                        copy.remove();
+                    };                 
+                    setElementAsReplace[0] = undefined;
+                } else {
+                    let rand = Math.random() * 20;
+                    workspaceElements[workspaceElements.length] = "<textarea spellcheck='false' onkeyup='SaveTextArea(this)' class='code-editor-workspace-element' onclick='WorkspaceClicked(this)' id='"+rand+"'>"+res+"</textarea>"
+                    setElementAsReplace[0] = undefined;
+                };
+            };
+            function SaveTextArea(e) {
+                let i=0;
+                let text = e.value;
+                for(i;i<workspaceElements.length;i++) {
+                    var copy = $(workspaceElements[i]);
+                    $('body').append(copy);
+                    if(copy.attr('id')!=e.id) {
+                        copy.remove();
+                        continue;
+                    };
+                    let res = "<textarea spellcheck='false' onkeyup='SaveTextArea(this)' class='code-editor-workspace-element' onclick='WorkspaceClicked(this)' id='"+e.id+"'>"+text+"</textarea>"
+                    workspaceElements[i] = res;
+                    copy.remove();
+                };
+            };
+            function SaveValue(e) {
+                e.value = e.value;
+            };
+            function TabButtonClicked(e) {
+                let doc = document.getElementById(e.id);
+                let main = document.getElementById('workspace');
+                main.style.setProperty('--grid-rows', doc.title);
+                let i=0;
+                if(!SavedData[e.id]) {
+                    SavedData[e.id] = []
+                };
+                if(lastElement!=e.id && lastElement!="") {
+                    for(i;i<InputList[lastElement];i++) {
+                        let el = document.getElementById('workspace-child'+i);
+                        if(el.value===undefined) {
+                            continue;
+                        };
+                        SavedData[lastElement][i] = el.value;
+                    };
+                }
+                var child = main.lastElementChild; 
+                while (child) {
+                    main.removeChild(child);
+                    child = main.lastElementChild;
+                }
+                i=0;
+                for(i;i<doc.title;i++) {
+                    let c = SavedData[e.id][i];
+                    let p = TitlesList[e.id][i];
+                    if(!c===undefined) {
+                        $('#workspace').append("<input type='text' placeholder='"+p+"' id='workspace-child"+i+"' value='"+c+"' onkeyup='SaveValue(this)' title='"+TitlesList[e.id][i]+"'></input>");
+                    } else {
+                        $('#workspace').append("<input type='text' placeholder='"+p+"' id='workspace-child"+i+"' value='"+StuffList[e.id][i]+"' onkeyup='SaveValue(this)' title='"+TitlesList[e.id][i]+"'></input>");
+                    };
+                };
+                i=0;
+                for(i;i<InputList[e.id];i++) {
+                    let el = document.getElementById('workspace-child'+i);
+                    let ch = SavedData[e.id][i];
+                    if(ch===undefined) {
+                        continue;
+                    } else {
+                        el.value = ch;
+                    };
+                };
+                lastElement = e.id;
+            };
+            document.onkeyup = function (data) {
+                if (data.which == 27) {
+                    let directory = GetParentResourceName()
+                    $.post('https://'+directory+'/exit', JSON.stringify({}));
+                    return;
+                };
+            };
+        </script>
+    </body>
+</html>
