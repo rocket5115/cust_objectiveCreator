@@ -9,22 +9,31 @@ Instructions:
 ![image](https://user-images.githubusercontent.com/65498427/171618585-e96d066f-29a5-4b3c-a705-a976bb582648.png)
 ![image](https://user-images.githubusercontent.com/65498427/171618486-7e70fbde-0df4-4aec-ab31-8718141b8507.png)
 
-here, marker is chosen as my element to work with. I can either choose to move it down or up. If element is lower then it means it will be executed later than ones above it. 
+Marker is my chosen element to work with. I can either:
 
-Copy-to-Clipboard = copies .oc version of chosen element
+-Copy the .oc version of it to my cliboard;
 
-Edit in workspace = copies current version of chosen element and takes you to workspace. After changes are made you must click sumbit button.
+-Edit it in workspace
 
-Move Down = Move element further down in execution queue
+-Move up the priority
 
-Move Up = Move element further up in execution queue
+-Move down the priority
 
-Remove = Remove chosen element
+-Remove this element
 
-Execute Project = Execute current project(FiveM only), you can execute as many times as you want.
+-Execute Current *Project*
 
-Export Project = copies .oc version of current project
+-Export .oc version of whole project
 
-#Submitting new changes
+***About workspace***
+You can use *Sumbit* button to either confirm changes or add new Element.
 
-After you set all of the options for any function you can Submit it using Submit button of bottom-left. After that you will find .oc version of it in Code Editor.
+***About loops***
+
+You **must** be careful, if loop doesn't have any type of break **or** break argument cannot be fulfilled this can lead to never ending loop unless script is restarted.
+
+>To create loop you have to choose *Misc-Loop*. 
+1. You'll find *exampleIdentifier*, type the name you want to use.
+2. Go to *Misc-Break*. You can either have a marker as break argument or event. Script accepts event as every other value than "marker".
+3. Remember to add Delay! Go to *Add Delay* and paste any number as to not crash your server!
+4. Go to *Misc-Goto*. Type in identifier you want to go back to and you are ready to go!
