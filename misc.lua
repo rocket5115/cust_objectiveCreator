@@ -223,10 +223,15 @@ Misc = {
         local toLoad = "TriggerServerEvent('" .. args[1]
         for i=1, #args, 1 do
             if i~=1 then
+                args[i] = (tonumber(args[i]) and args[i]) or ("'"..args[i].."'")
                 if i~=#args then
                     toLoad = toLoad..","..args[i]
                 else
                     toLoad = toLoad..","+ args[i].."')"
+                end
+            else
+                if #args == 1 then
+                    toLoad = toLoad..")"
                 end
             end
         end
