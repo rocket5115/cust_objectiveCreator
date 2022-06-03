@@ -76,11 +76,52 @@ function custExecute(str)
         retval[#retval+1] = Misc[res[i].name]
     end
     Citizen.CreateThread(function()
+        local i = 1
         local playerPed = PlayerPedId()
-        local shouldWait = false
         local lastWait = 0
-        for i=1, #retval, 1 do
+        local loops = {}
+        local inMarker = {}
+        local lastMarker = 0
+        local shouldStop = false
+        local registeredEvents = {}
+        while true do
+            if not retval[i] then
+                break
+            end
             retval[i](function(name, bool, additional) 
+                if name == 'loop' then
+                    loops[additional] = i
+                end
+                if name == 'goto' then
+                    if loops[additional] and not shouldStop then
+                        i = loops[additional]
+                    else
+                        shouldStop = false
+                    end
+                end
+                if name == 'break' then
+                    if additional == 'marker' then
+                        if lastWait > 0 then
+                            retval[lastWait](function(name2, b, add) 
+                                if custButtonPressedOnMarker[add.x] or custInMarker[add.x] then
+                                    inMarker[lastMarker] = nil
+                                    shouldStop = true
+                                end
+                            end, args[lastWait], true)
+                        end
+                    else
+                        if not registeredEvents[additional] then
+                            registeredEvents[additional] = true
+                            RegisterNetEvent(additional, function()
+                                onEvent = true
+                            end)
+                        else
+                            if onEvent then
+                                shouldStop = true
+                            end
+                        end
+                    end
+                end
                 if name == 'marker' then
                     lastWait = i
                 end
@@ -91,13 +132,17 @@ function custExecute(str)
                                 while true do
                                     Citizen.Wait(50)
                                     if custButtonPressedOnMarker[add.x] then
+                                        inMarker[add.x] = true
+                                        lastMarker = add.x
                                         break
                                     end
                                 end
                             else
                                 while true do
                                     Citizen.Wait(50)
-                                    if Vdist2(GetEntityCoords(playerPed), add) < 3.0 then
+                                    if custInMarker[add.x] then
+                                        inMarker[add.x] = true
+                                        lastMarker = add.x
                                         break
                                     end
                                 end
@@ -106,6 +151,7 @@ function custExecute(str)
                     end
                 end
             end, args[i], false)
+            i=i+1
         end
     end)
 end
