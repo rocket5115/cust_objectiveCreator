@@ -268,6 +268,27 @@
                     stuff: ['exampleEvent', '1'],
                     titles: ['eventName', 'object index']
                 },
+                {
+                    name: 'Misc-Loop',
+                    luaType: 'clo',
+                    inputs: 1,
+                    stuff: ['exampleIdentifier'],
+                    titles: ['Create loopable event']
+                }, 
+                {
+                    name: 'Misc-Goto',
+                    luaType: 'gtl',
+                    inputs: 1,
+                    stuff: ['exampleIdentifier'],
+                    titles: ['Go to indexed looped']
+                },
+                {
+                    name: 'Misc-Break',
+                    luaType: 'brk',
+                    inputs: 1,
+                    stuff: ['marker'],
+                    titles: ['Break loop']
+                }
             ];
             $(document).ready(function() {
                 let i = 0;
@@ -361,6 +382,20 @@
                             cls.remove();
                         };
                     });
+                    for(i;i<workspaceElements.length;i++) {
+                        if(workspaceElements[i]==undefined) {
+                            continue;
+                        };
+                        var copy = $(workspaceElements[i]);
+                        $('body').append(copy);
+                        if(copy.attr('id')!=lastWorkspaceElement) {
+                            copy.remove();
+                            continue;
+                        };
+                        workspaceElements[i] = undefined;
+                        lastWorkspaceElement = "";
+                        copy.remove();
+                    };
                 } else if(e.id=='code-editor-actions-down') {
                     let doc = document.querySelectorAll('.code-editor-workspace-element');
                     let pos = 0;
