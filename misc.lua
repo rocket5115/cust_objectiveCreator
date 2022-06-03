@@ -195,6 +195,7 @@ Misc = {
         local toLoad = "TriggerEvent('" .. args[1] .. "'"
         for i=1, #args, 1 do
             if i~=1 then
+                args[i] = (tonumber(args[i]) and args[i]) or ("'"..args[i].."'")
                 if i~=#args then
                     toLoad = toLoad..","..args[i]
                 else
@@ -206,7 +207,6 @@ Misc = {
                 end
             end
         end
-        print(toLoad)
         local func, err = load(toLoad)
         if func then
             local ok, add = pcall(func)
