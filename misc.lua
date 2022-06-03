@@ -16,6 +16,7 @@ end
 
 local custMarkers = {}
 custButtonPressedOnMarker = {}
+custInMarker = {}
 
 function custMarker(data, cb)
     local type = tonumber(data[1])
@@ -263,6 +264,27 @@ Misc = {
             return
         end
         TriggerEvent(args[1], custObjects[args[2]] or custLastObject)
+    end,
+    ['clo:'] = function(cb, args, check)
+        if check then
+            cb('loop')
+            return
+        end
+        cb('loop', true, args[1])
+    end,
+    ['gtl:'] = function(cb, args, check)
+        if check then
+            cb('goto')
+            return
+        end
+        cb('goto', true, args[1])
+    end,
+    ['brk:'] = function(cb, args, check)
+        if check then
+            cb('break')
+            return
+        end
+        cb('break', true, args[1])
     end
 }
 
@@ -276,14 +298,20 @@ Citizen.CreateThread(function()
                 local coords = GetEntityCoords(PlayerPedId())
                 for i=1, #custMarkers, 1 do
                     local mrk = custMarkers[i]
-                    if Vdist2(coords, mrk[2]) < 10.0 then
+                    local dist = Vdist2(coords, mrk[2])
+                    if dist < 10.0 then
                         DrawMarker(mrk[1], mrk[2], mrk[3], mrk[4], mrk[5], mrk[6], mrk[7], mrk[8], mrk[9], mrk[10], mrk[11], mrk[12], mrk[13], mrk[14], mrk[15], mrk[16], mrk[17], mrk[18], mrk[19], nil, nil, mrk[22])
                         if mrk[23] then
-                            if Vdist2(coords, mrk[2]) < 5.0 then
+                            if dist < 1.5 then
                                 if IsControlJustPressed(1, mrk[24]) then
                                     custButtonPressedOnMarker[mrk[2].x] = true
                                     custMarkers[i] = nil
                                 end
+                            end
+                        else
+                            if dist < 1.5 then
+                                custInMarker[mrk[2].x] = true
+                                custMarkers[i] = nil
                             end
                         end
                     end
