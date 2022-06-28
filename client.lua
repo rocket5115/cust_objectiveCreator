@@ -22,12 +22,18 @@ RegisterNUICallback('execute', function(data)
     custExecute(data.data)
 end)
 
-AddEventHandler('cust_objectiveCreator:execute', function(str)
-    if str == nil or str == "" then return end
-    custExecute(str)
+RegisterNUICallback('export', function(data)
+    TriggerServerEvent('cust_objectiveCreator:exportLua', data.data)
 end)
 
-function custExecute(str)
+AddEventHandler('cust_objectiveCreator:execute', function(str, cb)
+    if str == nil or str == "" then return end
+    custExecute(str, function(ended)
+        cb(ended)
+    end)
+end)
+
+function custExecute(str, callback)
     if not str or str == "" then 
         return 
     end
@@ -75,6 +81,7 @@ function custExecute(str)
     for i=1, #res, 1 do
         retval[#retval+1] = Misc[res[i].name]
     end
+    local endedExecuting = false
     Citizen.CreateThread(function()
         local i = 1
         local playerPed = PlayerPedId()
@@ -118,6 +125,7 @@ function custExecute(str)
                         else
                             if onEvent then
                                 shouldStop = true
+                                onEvent = false
                             end
                         end
                     end
@@ -132,6 +140,7 @@ function custExecute(str)
                                 while true do
                                     Citizen.Wait(50)
                                     if custButtonPressedOnMarker[add.x] then
+                                        custButtonPressedOnMarker[add.x] = nil
                                         inMarker[add.x] = true
                                         lastMarker = add.x
                                         break
@@ -141,6 +150,7 @@ function custExecute(str)
                                 while true do
                                     Citizen.Wait(50)
                                     if custInMarker[add.x] then
+                                        custInMarker[add.x] = nil
                                         inMarker[add.x] = true
                                         lastMarker = add.x
                                         break
@@ -153,5 +163,24 @@ function custExecute(str)
             end, args[i], false)
             i=i+1
         end
+        endedExecuting = true
     end)
+    if callback then
+        repeat Citizen.Wait(100) until endedExecuting
+        callback(true)
+    end
 end
+
+AddEventHandler('playerSpawned', function()
+    SendNUIMessage({
+        status = false
+    })
+end)
+
+Citizen.CreateThread(function()
+    Citizen.Wait(50)
+    SendNUIMessage({
+        type = 'lua',
+        status = false
+    })
+end)

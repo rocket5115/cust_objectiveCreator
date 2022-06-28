@@ -95,7 +95,7 @@ Misc = {
             Citizen.Wait(10)
         end
         local ped = CreatePed(tonumber(args[1]) or 1, model, tonumber(args[3]), tonumber(args[4]), tonumber(args[5]), tonumber(args[6]), toboolean(args[7]), toboolean(args[8]))
-        custPeds[tostring(#custPeds+1)] = ped
+        custPeds[tostring(args[9])] = ped
         if custLastPed == 0 then
             custLastPed = ped
         end
@@ -112,7 +112,7 @@ Misc = {
             Citizen.Wait(10)
         end
         local veh = CreateVehicle(model, tonumber(args[2]), tonumber(args[3]), tonumber(args[4]), tonumber(args[5]), toboolean(args[6]), toboolean(args[7]))
-        custVehicles[tostring(#custVehicles+1)] = veh
+        custVehicles[tostring(args[8])] = veh
         if custLastVehicle == 0 then
             custLastVehicle = veh
         end
@@ -129,7 +129,7 @@ Misc = {
             Citizen.Wait(10)
         end
         local obj = CreateObject(model, tonumber(args[2]), tonumber(args[3]), tonumber(args[4]), toboolean(args[5]), toboolean(args[6]), tonumber(args[7]))
-        custObjects[tostring(#custObjects+1)] = obj
+        custObjects[tostring(args[8])] = obj
         if custLastObject == 0 then
             custLastObject = obj
         end
@@ -177,16 +177,6 @@ Misc = {
             return
         end
         cb('await', true)
-    end,
-    ['lnp:'] = function(cb, args, check)
-        if check then
-            cb('loadnpc')
-            return
-        end
-        if custPeds[args[1]] then
-            custLastPed = custPeds[args[1]]
-        end
-        cb('loadnpc')
     end,
     ['tce:'] = function(cb, args, check)
         if check then
@@ -243,27 +233,6 @@ Misc = {
             print(err)
         end
         cb('triggerserverevent')
-    end,
-    ['exp:'] = function(cb, args, check)
-        if check then
-            cb('pedexport')
-            return
-        end
-        TriggerEvent(args[1], custPeds[args[2]] or custLastPed)
-    end,
-    ['exv:'] = function(cb, args, check)
-        if check then
-            cb('vehicleexport')
-            return
-        end
-        TriggerEvent(args[1], custVehicles[args[2]] or custLastVehicle)
-    end,
-    ['exo:'] = function(cb, args, check)
-        if check then
-            cb('objectexport')
-            return
-        end
-        TriggerEvent(args[1], custObjects[args[2]] or custLastObject)
     end,
     ['clo:'] = function(cb, args, check)
         if check then

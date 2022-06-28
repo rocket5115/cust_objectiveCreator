@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+        <script type="text/javascript" src="./template.js"></script>
         <title>Objective Creator-Enhanced</title>
         <link rel="stylesheet" href="./style.css">
         <link rel="stylesheet" href="./code-editor.css">
@@ -29,25 +31,71 @@
                         <div class="code-editor-actions-tab" id="code-editor-actions-remove" onclick="CodeTabClicked(this)">Remove</div>
                         <div class="code-editor-actions-tab" id="code-editor-actions-execute" onclick="CodeTabClicked(this)">Execute Project</div>
                         <div class="code-editor-actions-tab" id="code-editor-actions-export" onclick="CodeTabClicked(this)">Export Project</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-export-lua" onclick="CodeTabClicked(this)">Export Lua</div>
                     </div>
                     <div id="main-workspace"></div>
                 </div>
             </div>
         </container>
         <script>
+            var lastWorkspaceElement = "";
+            var ctrlDown = false,ctrlKey = 17,cmdKey = 91,vKey = 86,cKey = 67;
+            $(document).keydown(function(e) {
+                if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+            }).keyup(function(e) {
+                if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+            });
+            $(document).keydown(function(e) {
+                if (ctrlDown && (e.keyCode == cKey)) CopyElement();
+                if (ctrlDown && (e.keyCode == vKey)) PasteElement();
+            });
+            var copiedElement = "";
+            function CopyElement() {
+                let el = document.getElementById('main-space');
+                if(lastWorkspaceElement==""||el.style.display!="none") {
+                    return;
+                };
+                copiedElement = document.getElementById(lastWorkspaceElement).value;
+            };
+            function PasteElement() {
+                let el = document.getElementById('main-space');
+                if(copiedElement==""||el.style.display!="none") {
+                    return;
+                };
+                let rand = Math.random() * 20;
+                workspaceElements[workspaceElements.length] = "<textarea spellcheck='false' onkeyup='SaveTextArea(this)' class='code-editor-workspace-element' onclick='WorkspaceClicked(this)' id='"+rand+"'>"+copiedElement+"</textarea>"
+                setElementAsReplace[0] = undefined;
+                let doc = document.querySelectorAll('.code-editor-workspace-element');
+                let res = "";
+                doc.forEach(cls => {
+                    cls.remove();
+                });
+                let i=0;
+                for(i;i<workspaceElements.length;i++) {
+                    res = res + '60px ';
+                    $('#main-workspace').append(workspaceElements[i]);
+                };
+                let ws = document.getElementById('main-workspace');
+                ws.style.gridTemplateRows = res;
+            };
             function hideAssets() {
                 $('#code-editor').hide();
                 $('#main-space').hide();
             };
-
-            function display(bool) {
+            var show = false;
+            function display(bool, ex) {
+                if(ex&&show) {
+                    return false;
+                };
                 if (bool) {
                     $('#container').show();
                 } else {
                     $('#container').hide();
                 };
             };
-            display(false);
+            setTimeout(function() {
+                display(true, true);
+            }, 200)
             hideAssets();
             var coordX = 9.99;
             var coordY = 9.99;
@@ -58,14 +106,20 @@
             var StuffList = [];
             var LuaList = [];
             var SavedData = [];
+            var LuaNameList = [];
             window.addEventListener('message', function(event) {
                 var item = event.data;
+                if(item.type == 'lua') {
+                    show = true;
+                    return;
+                };
                 if(item.status === true) {
                     display(true);
                     if(item.additionalData) {
                         UpdateXYZH(item.additionalData);
                     };
-                } else {
+                } else if(item.status === false) {
+                    console.log('432432')
                     display(false);
                 };
             });
@@ -139,7 +193,6 @@
                     docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
                 };
             };
-            var lastWorkspaceElement = "";
             function OpenWorkspace(bool) {
                 if(!bool) {
                     return
@@ -161,14 +214,16 @@
                     luaType: 'cnt',
                     inputs: 1,
                     stuff: ['some text'],
-                    titles: ['text']
+                    titles: ['text'],
+                    lua: 'event',
                 },
                 {
                     name: 'Create MissionText',
                     luaType: 'cmt',
                     inputs: 2,
                     stuff: ['some text', 1000],
-                    titles: ['text', 'time']
+                    titles: ['text', 'time'],
+                    lua: 'CMT',
                 },
                 {
                     name: 'Create Marker',
@@ -176,118 +231,103 @@
                     inputs: 26,
                     stuff: [0, coordX, coordY, coordZ, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 255, 255, 255, 255, false, false, 2, false, null, null, false, false, 46],
                     titles: ["type", "x", "y", "z", "dirX", "dirY", "dirZ", "rotX", "rotY", "rotZ", "scaleX", "scaleY", "scaleZ", "red", "green", "blue", "alpha", "bobUpAndDown", "faceCamera", "p19", "rotate", "textureDict", "textureName", "drawOnEnts", "onButton", "key"],
+                    lua: 'DrawMarker',
                 },
                 {
                     name: 'Create NPC',
                     luaType: 'cnp',
-                    inputs: 8,
-                    stuff: [1, "a_f_m_beach_01", coordX, coordY, coordZ, heading, false, false],
-                    titles: ['pedType-unused', 'modelHash', 'x', 'y', 'z', 'heading', 'isNetwork', 'bScriptHostPed']
+                    inputs: 9,
+                    stuff: [1, "a_f_m_beach_01", coordX, coordY, coordZ, heading, false, false, 'ped'],
+                    titles: ['pedType-unused', 'modelHash', 'x', 'y', 'z', 'heading', 'isNetwork', 'bScriptHostPed', 'name'],
+                    lua: 'CreatePed',
                 },
                 {
                     name: 'Create Vehicle',
                     luaType: 'cvh',
-                    inputs: 7,
-                    stuff: ["blista", coordX, coordY, coordZ, heading, false, false],
-                    titles: ["modelHash", 'x', 'y', 'z', 'heading', 'isNetwork', "netMissionEntity"]
+                    inputs: 8,
+                    stuff: ["blista", coordX, coordY, coordZ, heading, false, false, 'vehicle'],
+                    titles: ["modelHash", 'x', 'y', 'z', 'heading', 'isNetwork', "netMissionEntity", 'name'],
+                    lua: 'CreateVehicle'
                 },
                 {
                     name: 'Create Object',
                     luaType: 'cob',
-                    inputs: 7,
-                    stuff: ["prop_drug_package", coordX, coordY, coordZ, heading, false, false],
-                    titles: ['hash', 'x', 'y', 'z', 'heading', 'isNetwork', 'doorFlag']
+                    inputs: 8,
+                    stuff: ["prop_drug_package", coordX, coordY, coordZ, heading, false, false, 'object'],
+                    titles: ['hash', 'x', 'y', 'z', 'heading', 'isNetwork', 'doorFlag', 'name'],
+                    lua: 'CreateObject'
                 },
                 {
                     name: 'Add Animation',
                     luaType: 'ani',
                     inputs: 11,
                     stuff: ['self', 'gestures@m@standing@casual', 'gesture_point', 8.0, -8.0, -1, 0, 0, false, false, false],
-                    titles: ['ped - last registered ped', 'animDict', 'animName', 'blendInSpeed', 'blendOutSpeed', 'duration', 'flag', 'playbackrate', 'lockX', 'lockY', 'lockZ']
+                    titles: ['ped - last registered ped', 'animDict', 'animName', 'blendInSpeed', 'blendOutSpeed', 'duration', 'flag', 'playbackrate', 'lockX', 'lockY', 'lockZ'],
+                    lua: 'TaskPlayAnim'
                 },
                 {
                     name: 'Add Scenario',
                     luaType: 'sce',
                     inputs: 4,
                     stuff: ['self', 'WORLD_VEHICLE_BIKER', -1, false],
-                    titles: ['ped - last registered ped', 'scenName', 'unkDelay', 'playEnterAnim']
+                    titles: ['ped - last registered ped', 'scenName', 'unkDelay', 'playEnterAnim'],
+                    lua: 'TaskStartScenarioInPlace'
                 },
                 {
                     name: 'Add Delay',
                     luaType: 'del',
                     inputs: 1,
                     stuff: [1000],
-                    titles: ['Delay between actions']
+                    titles: ['Delay between actions'],
+                    lua: 'Wait'
                 },
                 {
                     name: 'Add Await',
                     luaType: 'awa',
                     inputs: 1,
                     stuff: [true],
-                    titles: ['ignore-unused']
-                },
-                {
-                    name: 'Load NPC',
-                    luaType: 'lnp',
-                    inputs: 1,
-                    stuff: ['1'],
-                    titles: ['Ped Slot in script\'s internal table']
+                    titles: ['ignore-unused'],
+                    lua: 'none'
                 },
                 {
                     name: 'Trigger Event',
                     luaType: 'tce',
                     inputs: 10,
                     stuff: ['eventName', '', '', '', '', '', '', '', '', ''],
-                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']
+                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string'],
+                    lua: 'TriggerEvent'
                 },
                 {
                     name: 'Trigger Server Event',
                     luaType: 'tse',
                     inputs: 10,
                     stuff: ['eventName', '', '', '', '', '', '', '', '', ''],
-                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']
-                },
-                {
-                    name: 'Export Ped',
-                    luaType: 'exp',
-                    inputs: 2,
-                    stuff: ['exampleEvent', '1'],
-                    titles: ['eventName', 'ped index']
-                },
-                {
-                    name: 'Export Vehicle',
-                    luaType: 'exv',
-                    inputs: 2,
-                    stuff: ['exampleEvent', '1'],
-                    titles: ['eventName', 'vehicle index']
-                },
-                {
-                    name: 'Export Object',
-                    luaType: 'exo',
-                    inputs: 2,
-                    stuff: ['exampleEvent', '1'],
-                    titles: ['eventName', 'object index']
+                    titles: ['eventName', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string'],
+                    lua: 'TriggerServerEvent'
                 },
                 {
                     name: 'Misc-Loop',
                     luaType: 'clo',
                     inputs: 1,
                     stuff: ['exampleIdentifier'],
-                    titles: ['Create loopable event']
+                    titles: ['Create loopable event'],
+                    lua: 'none'
                 }, 
                 {
                     name: 'Misc-Break',
                     luaType: 'brk',
                     inputs: 1,
                     stuff: ['marker'],
-                    titles: ['Break loop']
+                    titles: ['Break loop'],
+                    lua: 'none'
                 },
                 {
                     name: 'Misc-Goto',
                     luaType: 'gtl',
                     inputs: 1,
                     stuff: ['exampleIdentifier'],
-                    titles: ['Go to indexed looped']
+                    titles: ['Go to indexed looped'],
+                    lua: 'none'
                 }
             ];
             $(document).ready(function() {
@@ -300,6 +340,7 @@
                     InputList[List[i].name] = List[i].inputs;
                     TitlesList[List[i].name] = List[i].titles;
                     StuffList[List[i].name] = List[i].stuff;
+                    LuaNameList[List[i].luaType] = List[i].lua;
                 };
                 let wor = document.querySelectorAll('.code-editor-actions-tab');
                 let res = ""
@@ -369,6 +410,9 @@
             };
             function CodeTabClicked(e) {
                 let i = 0;
+                if(lastWorkspaceElement==""&&(e.id!="code-editor-actions-execute"&&e.id!="code-editor-actions-export"&&e.id!='code-editor-actions-export-lua')) {
+                    return;
+                };
                 if(e.id=='code-editor-actions-copy-cb') {
                     let doc = document.getElementById(lastWorkspaceElement).textContent;
                     CopyToClipboard(doc)
@@ -505,22 +549,64 @@
                         };
                     };
                     CopyToClipboard(res);
+                } else if(e.id=='code-editor-actions-export-lua') {
+                    let docs = document.querySelectorAll('.code-editor-workspace-element');
+                    let res = lua;
+                    for(i;i<docs.length;i++) {
+                        res = res +"\n    "+TranslateLua(docs[i].value);
+                    };
+                    res = res + "\nend)"
+                    if(show) {
+                        let directory = GetParentResourceName()
+                        $.post('https://'+directory+'/export', JSON.stringify({
+                            data: res
+                        }));
+                    } else {
+                        var blob = new Blob([res], {
+                            type: "text/plain;charset=utf-8"
+                        });
+                        saveAs(blob, 'project.lua');
+                    };
+                    CopyToClipboard(res);
                 };
             };
+            var lastClassSelected = "";
             function WorkspaceClicked(e) {
                 if(lastWorkspaceElement!="") {
                     let doc = document.getElementById(lastWorkspaceElement);
                     if(doc) {
                         doc.style.backgroundColor = "rgba(238, 238, 238, 0.447)";
                     }
+                    if(lastClassSelected!="") {
+                        let els = document.querySelectorAll('.code-editor-workspace-element');
+                        els.forEach(cls => {
+                            document.getElementById(cls.id).style.backgroundColor = "rgba(238, 238, 238, 0.447)";
+                        });
+                    };
                     lastWorkspaceElement = e.id;
                     let docs = document.getElementById(lastWorkspaceElement);
                     docs.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
                     lastWorkspaceElement = e.id;
+                    lastClassSelected = docs.textContent.substring(0, 3);
+                    let elems = document.querySelectorAll('.code-editor-workspace-element');
+                    elems.forEach(cls => {
+                        let dc = document.getElementById(cls.id);
+                        if(dc.textContent.substring(0, 3)==lastClassSelected&&dc.id!=lastWorkspaceElement) {
+                            dc.style.backgroundColor = "rgba(132, 183, 85, 0.298)";
+                        };
+                    });
                 } else {
                     lastWorkspaceElement = e.id;
+                    lastClassSelected = e.textContent.substring(0, 3);
                     let doc = document.getElementById(lastWorkspaceElement);
                     doc.style.backgroundColor = "rgba(171, 255, 92, 0.705)";
+                    let elems = document.querySelectorAll('.code-editor-workspace-element');
+                    elems.forEach(cls => {
+                        let dc = document.getElementById(cls.id);
+                        if(dc.textContent.substring(0, 3)==lastClassSelected&&dc.id!=lastWorkspaceElement) {
+                            dc.style.backgroundColor = "rgba(132, 183, 85, 0.298)";
+                        };
+                    });
                 };
             };
             var lastElement = "";
