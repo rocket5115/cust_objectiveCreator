@@ -215,6 +215,15 @@
                 if(!bool) {
                     return
                 };
+                let i=0;
+                for(i;i<workspaceElements.length;i++) {
+                    var copy = $(workspaceElements[i]);
+                    $('body').append(copy);
+                    if(document.getElementById(copy.attr('id')).style==null) {
+                        workspaceElements[i] = undefined;
+                    }
+                    copy.remove();
+                };
                 $('#main-space').hide();
                 $('#code-editor').show();
                 let main = document.getElementById('main-space');
@@ -226,7 +235,7 @@
                 doc.forEach(cls => {
                     cls.remove();
                 });
-                let i=0;
+                i=0;
                 for(i;i<workspaceElements.length;i++) {
                     res = res + '60px ';
                     $('#main-workspace').append(workspaceElements[i]);
