@@ -30,8 +30,8 @@
                         <div class="code-editor-actions-tab" id="code-editor-actions-down" onclick="CodeTabClicked(this)">Move Down</div>
                         <div class="code-editor-actions-tab" id="code-editor-actions-remove" onclick="CodeTabClicked(this)">Remove</div>
                         <div class="code-editor-actions-tab" id="code-editor-actions-execute" onclick="CodeTabClicked(this)">Execute Project</div>
-                        <div class="code-editor-actions-tab" id="code-editor-actions-export" onclick="CodeTabClicked(this)">Export Project</div>
-                        <div class="code-editor-actions-tab" id="code-editor-actions-export-lua" onclick="CodeTabClicked(this)">Export Lua</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-export" onclick="CodeTabClicked(this)">Export Project(string)</div>
+                        <div class="code-editor-actions-tab" id="code-editor-actions-export-lua" onclick="CodeTabClicked(this)">Export Lua(raw File)</div>
                     </div>
                     <div id="main-workspace"></div>
                 </div>
@@ -48,7 +48,41 @@
             $(document).keydown(function(e) {
                 if (ctrlDown && (e.keyCode == cKey)) CopyElement();
                 if (ctrlDown && (e.keyCode == vKey)) PasteElement();
+                if (e.keyCode == 46) DeleteElement();
             });
+            function DeleteElement() {
+                let doc = document.querySelectorAll('.code-editor-workspace-element');
+                doc.forEach(cls => {
+                    if(cls.id==lastWorkspaceElement) {
+                        cls.remove();
+                    };
+                });
+                let pos = 0;
+                let i=0;
+                for(i;i<workspaceElements.length;i++) {
+                    if(workspaceElements[i]==undefined) {
+                        continue;
+                    };
+                    var copy = $(workspaceElements[i]);
+                    $('body').append(copy);
+                    if(copy.attr('id')!=lastWorkspaceElement) {
+                        copy.remove();
+                        continue;
+                    };
+                    pos = i + 1
+                    workspaceElements[i] = undefined;
+                    lastWorkspaceElement = "";
+                    copy.remove();
+                };
+                var copy = $(workspaceElements[pos]);
+                $('body').append(copy);
+                var copy2 = $(workspaceElements[pos-1]);
+                $('body').append(copy2);
+                lastWorkspaceElement = document.getElementById(copy2.attr('id'));
+                WorkspaceClicked(document.getElementById(copy.attr('id')));
+                copy.remove();
+                copy2.remove();
+            };
             var copiedElement = "";
             function CopyElement() {
                 let el = document.getElementById('main-space');
@@ -113,6 +147,10 @@
                     show = true;
                     return;
                 };
+                if(item.type == 'addoc') {
+                    AddOC(item.data);
+                    return;
+                };
                 if(item.status === true) {
                     display(true);
                     if(item.additionalData) {
@@ -122,6 +160,14 @@
                     display(false);
                 };
             });
+            function AddOC(data) {
+                let i=0;
+                for(i;i<data.length;i++) {
+                    let rand = Math.random() * 20;
+                    workspaceElements[workspaceElements.length] = "<textarea spellcheck='false' onkeyup='SaveTextArea(this)' class='code-editor-workspace-element' onclick='WorkspaceClicked(this)' id='"+rand+"'>"+data[i]+"</textarea>"
+                    setElementAsReplace[0] = undefined;
+                };
+            };
             function UpdateXYZH(vector4) {
                 let i=0;
                 let names = [];
@@ -219,9 +265,9 @@
                 {
                     name: 'Create MissionText',
                     luaType: 'cmt',
-                    inputs: 2,
-                    stuff: ['some text', 1000],
-                    titles: ['text', 'time'],
+                    inputs: 3,
+                    stuff: ['some text', 1000, false],
+                    titles: ['text', 'time', 'wait-given-time'],
                     lua: 'CMT',
                 },
                 {
@@ -571,6 +617,9 @@
             };
             var lastClassSelected = "";
             function WorkspaceClicked(e) {
+                if(e==undefined||e==null||e.id==null) {
+                    return;
+                };
                 if(lastWorkspaceElement!="") {
                     let doc = document.getElementById(lastWorkspaceElement);
                     if(doc) {

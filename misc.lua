@@ -5,13 +5,16 @@ custLastObject = 0
 custVehicles = {}
 custLastVehicle = 0
 
-function custMissionText(text, time)
+function custMissionText(text, time, await)
     text = tostring(text)
     time = tonumber(time) or 1000
     ClearPrints()
     SetTextEntry_2("STRING")
     AddTextComponentString(text)
     DrawSubtitleTimed(time, 1)
+    if await then
+        Citizen.Wait(time)
+    end
 end
 
 local custMarkers = {}
@@ -72,7 +75,7 @@ Misc = {
             cb('missiontext')
             return
         end
-        custMissionText(args[1], args[2])
+        custMissionText(args[1], args[2], toboolean(args[3]))
         cb('missiontext')
     end,
     ['mar:'] = function(cb, args, check)

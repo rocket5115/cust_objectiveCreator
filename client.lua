@@ -33,6 +33,57 @@ AddEventHandler('cust_objectiveCreator:execute', function(str, cb)
     end)
 end)
 
+local function TranslateOC(str, cb)
+    if not str or str == "" then 
+        return 
+    end
+    local res = {}
+    str = string.sub(str, 2, string.len(str))
+    local pos = 0
+    local start_pos = 0
+    for i=1, string.len(str), 1 do
+        local sub = string.sub(str, i, i)
+        local sub2 = string.sub(str, i, i+3)
+        local hasStarted = (string.sub(sub2, 4, 4) == ":")
+        local hasEnded = (sub==';' or sub=='}')
+        if hasStarted then
+            pos = i+4
+            start_pos = i
+        elseif hasEnded then
+            table.insert(res, {
+                name = string.sub(str, start_pos, start_pos+3),
+                args = string.sub(str, pos, i-1)
+            })
+        end
+    end
+    local final = {}
+    for i=1, #res, 1 do
+        final[#final+1] = res[i].name .. res[i].args
+    end
+    if cb then
+        cb(final)
+    else 
+        return final
+    end
+end
+
+local function AddOC(tab)
+    SendNUIMessage({
+        type = 'addoc',
+        data = tab
+    })
+end
+
+AddEventHandler('cust_objectiveCreator:addoc', function(str, cb)
+    if str == nil or str == "" then return end
+    TranslateOC(str, function(oc)
+        AddOC(oc)
+        if cb then
+            cb(oc)
+        end
+    end)
+end)
+
 function custExecute(str, callback)
     if not str or str == "" then 
         return 

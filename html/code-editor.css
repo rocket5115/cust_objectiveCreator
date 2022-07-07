@@ -19,6 +19,8 @@
     grid-template-columns: 25% auto;
     grid-gap: 1em;
     row-gap: 1em;
+    overflow: auto;
+    max-height: 100% !important;
 }
 
 #sub-container>#code-editor>#code-editor-actions {
@@ -28,11 +30,13 @@
 }
 
 #sub-container>#code-editor>#main-workspace {
-    background-color:rgba(0, 2, 47, 0.093);
+    background-color: rgba(0, 2, 47, 0.093);
     margin: 0%;
     padding: 0%;
     display: grid;
     grid-template-rows: auto;
+    overflow: auto;
+    max-height: 95%;
 }
 
 #sub-container>#code-editor>#main-workspace>textarea {
