@@ -588,9 +588,9 @@
                     let res = "{";
                     for(i;i<docs.length;i++) {
                         if((i+1)!=docs.length) {
-                            res = res + docs[i].value
+                            res = res + docs[i].value + ';';
                         } else {
-                            res = res + docs[i].value.replace(';', "}")
+                            res = res + docs[i].value.replace(';', "}");
                         };
                     };
                     CopyToClipboard(res);
