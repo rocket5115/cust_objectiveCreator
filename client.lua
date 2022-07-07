@@ -158,6 +158,7 @@ function custExecute(str, callback)
                         i = loops[additional]
                         inloop = true
                         if not hasdelay then
+                            hasdelay = true
                             overridedelay = true
                             Citizen.Wait(0)
                         end
