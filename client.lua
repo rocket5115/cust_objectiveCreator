@@ -142,6 +142,9 @@ function custExecute(str, callback)
         local lastMarker = 0
         local shouldStop = false
         local registeredEvents = {}
+        local inloop = false
+        local hasdelay = false
+        local overridedelay = false
         while true do
             if not retval[i] then
                 break
@@ -153,9 +156,25 @@ function custExecute(str, callback)
                 if name == 'goto' then
                     if loops[additional] and not shouldStop then
                         i = loops[additional]
+                        inloop = true
+                        if not hasdelay then
+                            overridedelay = true
+                            Citizen.Wait(0)
+                        end
                     else
                         shouldStop = false
+                        inloop = false
+                        hasdelay = false
+                        overridedelay = false
                     end
+                end
+                if inloop and not hasdelay then
+                    if name == 'delay' then
+                        hasdelay = true
+                    end
+                end
+                if overridedelay then
+                    Citizen.Wait(0)
                 end
                 if name == 'break' then
                     if additional == 'marker' then
