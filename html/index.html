@@ -219,7 +219,7 @@
                 for(i;i<workspaceElements.length;i++) {
                     var copy = $(workspaceElements[i]);
                     $('body').append(copy);
-                    if(document.getElementById(copy.attr('id')).style==null) {
+                    if(document.getElementById(copy.attr('id'))==null) {
                         workspaceElements[i] = undefined;
                     }
                     copy.remove();
