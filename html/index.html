@@ -604,6 +604,7 @@
                         };
                     };
                     res = res.replace(';}', '}');
+                    res = res.replace(';;', ';');
                     CopyToClipboard(res);
                 } else if(e.id=='code-editor-actions-export-lua') {
                     let docs = document.querySelectorAll('.code-editor-workspace-element');
