@@ -598,13 +598,17 @@
                     let res = "{";
                     for(i;i<docs.length;i++) {
                         if((i+1)!=docs.length) {
-                            res = res + docs[i].value + ';';
+                            let amt = countCharacters(docs[i].value);
+                            if(substring(docs[i].value, amt-1, amt)!=";") {
+                                res = res + docs[i].value + ';';
+                           };
+
                         } else {
                             res = res + docs[i].value + "}";
                         };
                     };
                     res = res.replace(';}', '}');
-                    res = res.replace(';;', ';');
+
                     CopyToClipboard(res);
                 } else if(e.id=='code-editor-actions-export-lua') {
                     let docs = document.querySelectorAll('.code-editor-workspace-element');
