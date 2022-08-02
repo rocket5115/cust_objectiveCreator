@@ -601,7 +601,9 @@
                             let amt = countCharacter(docs[i].value);
                             if(docs[i].value.substring(amt-1, amt)!=";") {
                                 res = res + docs[i].value + ';';
-                           };
+                            } else {
+                                res = res + docs[i]. value;
+                            };
                         } else {
                             res = res + docs[i].value + "}";
                         };
