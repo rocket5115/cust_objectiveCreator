@@ -599,7 +599,7 @@
                     for(i;i<docs.length;i++) {
                         if((i+1)!=docs.length) {
                             let amt = countCharacter(docs[i].value);
-                            if(docs[i].value.substring(amt-1, amt)!=";") {
+                            if(docs[i].value.substring(docs[i].value.length-1, docs[i].value.length)!=";") {
                                 res = res + docs[i].value + ';';
                             } else {
                                 res = res + docs[i]. value;
