@@ -88,6 +88,7 @@ function custExecute(str, callback)
     if not str or str == "" then 
         return 
     end
+    str = str:gsub(";;",";")
     local res = {}
     str = string.sub(str, 2, string.len(str))
     local found = false
